@@ -566,7 +566,7 @@ void PCD8544_Print(int16_t x, int16_t y, char* str, FontDef_t* Font, uint8_t mul
 
 /********************************РАБОТА С ГЕОМЕТРИЧЕСКИМИ ФИГУРАМИ**********************************/
 
-void PCD8544_Draw_line(uint8_t x_start, uint8_t y_start, uint8_t x_end, uint8_t y_end) {
+void PCD8544_Draw_line(uint8_t x_start, uint8_t y_start, uint8_t x_end, uint8_t y_end, uint8_t color) {
 	int dx = (x_end >= x_start) ? x_end - x_start : x_start - x_end;
 	int dy = (y_end >= y_start) ? y_end - y_start : y_start - y_end;
 	int sx = (x_start < x_end) ? 1 : -1;
@@ -574,7 +574,13 @@ void PCD8544_Draw_line(uint8_t x_start, uint8_t y_start, uint8_t x_end, uint8_t 
 	int err = dx - dy;
 
 	for (;;) {
-		PCD8544_Draw_pixel(x_start, y_start);
+		if(color){
+			PCD8544_Draw_pixel(x_start, y_start);
+		}
+		else{
+			PCD8544_Clear_pixel(x_start, y_start);
+		}
+
 		if (x_start == x_end && y_start == y_end)
 			break;
 		int e2 = err + err;
@@ -591,7 +597,7 @@ void PCD8544_Draw_line(uint8_t x_start, uint8_t y_start, uint8_t x_end, uint8_t 
 
 
 /*--------------------------------Вывести пустотелый прямоугольник---------------------------------*/
-void PCD8544_Draw_rectangle(uint16_t x, uint16_t y, uint16_t width, uint16_t height) {
+void PCD8544_Draw_rectangle(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint8_t color) {
 /// Вывести пустотелый прямоугольник
 /// \param x - начальная точка по оси "x"
 /// \param y - начальная точка по оси "y"
@@ -607,15 +613,15 @@ void PCD8544_Draw_rectangle(uint16_t x, uint16_t y, uint16_t width, uint16_t hei
 	}
 
 	/*Рисуем линии*/
-	PCD8544_Draw_line(x, y, x + width, y); /*Верх прямоугольника*/
-	PCD8544_Draw_line(x, y + height, x + width, y + height); /*Низ прямоугольника*/
-	PCD8544_Draw_line(x, y, x, y + height); /*Левая сторона прямоугольника*/
-	PCD8544_Draw_line(x + width, y, x + width, y + height); /*Правая сторона прямоугольника*/
+	PCD8544_Draw_line(x, y, x + width, y, color); /*Верх прямоугольника*/
+	PCD8544_Draw_line(x, y + height, x + width, y + height, color); /*Низ прямоугольника*/
+	PCD8544_Draw_line(x, y, x, y + height, color); /*Левая сторона прямоугольника*/
+	PCD8544_Draw_line(x + width, y, x + width, y + height, color); /*Правая сторона прямоугольника*/
 }
 /*--------------------------------Вывести пустотелый прямоугольник---------------------------------*/
 
 /*-------------------------------Вывести закрашенный прямоугольник---------------------------------*/
-void PCD8544_Draw_rectangle_filled(uint16_t x, uint16_t y, uint16_t width, uint16_t height) {
+void PCD8544_Draw_rectangle_filled(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint8_t color) {
 /// Вывести закрашенный прямоугольник
 /// \param x - начальная точка по оси "x"
 /// \param y - начальная точка по оси "y"
@@ -632,13 +638,13 @@ void PCD8544_Draw_rectangle_filled(uint16_t x, uint16_t y, uint16_t width, uint1
 
 	/*Рисуем линии*/
 	for (uint8_t i = 0; i <= height; i++) {
-		PCD8544_Draw_line(x, y + i, x + width, y + i);
+		PCD8544_Draw_line(x, y + i, x + width, y + i, color);
 	}
 }
 /*-------------------------------Вывести закрашенный прямоугольник---------------------------------*/
 
 /*---------------------------------Вывести пустотелую окружность-----------------------------------*/
-void PCD8544_Draw_circle(uint8_t x, uint8_t y, uint8_t radius) {
+void PCD8544_Draw_circle(uint8_t x, uint8_t y, uint8_t radius, uint8_t color) {
 /// Вывести пустотелую окружность
 /// \param x - точка центра окружности по оси "x"
 /// \param y - точка центра окружности по оси "y"
@@ -649,11 +655,20 @@ void PCD8544_Draw_circle(uint8_t x, uint8_t y, uint8_t radius) {
 
 	int ddF_y = -2 * (int) radius;
 	int x_0 = 0;
-
-	PCD8544_Draw_pixel(x, y + radius);
-	PCD8544_Draw_pixel(x, y - radius);
-	PCD8544_Draw_pixel(x + radius, y);
-	PCD8544_Draw_pixel(x - radius, y);
+	
+	if(color){
+		PCD8544_Draw_pixel(x, y + radius);
+		PCD8544_Draw_pixel(x, y - radius);
+		PCD8544_Draw_pixel(x + radius, y);
+		PCD8544_Draw_pixel(x - radius, y);
+	}
+	else{
+		PCD8544_Clear_pixel(x, y + radius);
+		PCD8544_Clear_pixel(x, y - radius);
+		PCD8544_Clear_pixel(x + radius, y);
+		PCD8544_Clear_pixel(x - radius, y);
+	}
+	
 
 	int y_0 = radius;
 	while (x_0 < y_0) {
@@ -665,20 +680,34 @@ void PCD8544_Draw_circle(uint8_t x, uint8_t y, uint8_t radius) {
 		x_0++;
 		ddF_x += 2;
 		f += ddF_x;
-		PCD8544_Draw_pixel(x + x_0, y + y_0);
-		PCD8544_Draw_pixel(x - x_0, y + y_0);
-		PCD8544_Draw_pixel(x + x_0, y - y_0);
-		PCD8544_Draw_pixel(x - x_0, y - y_0);
-		PCD8544_Draw_pixel(x + y_0, y + x_0);
-		PCD8544_Draw_pixel(x - y_0, y + x_0);
-		PCD8544_Draw_pixel(x + y_0, y - x_0);
-		PCD8544_Draw_pixel(x - y_0, y - x_0);
+		
+		if(color){
+			PCD8544_Draw_pixel(x + x_0, y + y_0);
+			PCD8544_Draw_pixel(x - x_0, y + y_0);
+			PCD8544_Draw_pixel(x + x_0, y - y_0);
+			PCD8544_Draw_pixel(x - x_0, y - y_0);
+			PCD8544_Draw_pixel(x + y_0, y + x_0);
+			PCD8544_Draw_pixel(x - y_0, y + x_0);
+			PCD8544_Draw_pixel(x + y_0, y - x_0);
+			PCD8544_Draw_pixel(x - y_0, y - x_0);
+		}
+		else{
+			PCD8544_Clear_pixel(x + x_0, y + y_0);
+			PCD8544_Clear_pixel(x - x_0, y + y_0);
+			PCD8544_Clear_pixel(x + x_0, y - y_0);
+			PCD8544_Clear_pixel(x - x_0, y - y_0);
+			PCD8544_Clear_pixel(x + y_0, y + x_0);
+			PCD8544_Clear_pixel(x - y_0, y + x_0);
+			PCD8544_Clear_pixel(x + y_0, y - x_0);
+			PCD8544_Clear_pixel(x - y_0, y - x_0);
+		}
+		
 	}
 }
 /*---------------------------------Вывести пустотелую окружность-----------------------------------*/
 
 /*--------------------------------Вывести закрашенную окружность-----------------------------------*/
-void PCD8544_Draw_circle_filled(int16_t x, int16_t y, int16_t radius) {
+void PCD8544_Draw_circle_filled(int16_t x, int16_t y, int16_t radius, uint8_t color) {
 /// Вывести закрашенную окружность
 /// \param x - точка центра окружности по оси "x"
 /// \param y - точка центра окружности по оси "y"
@@ -690,11 +719,22 @@ void PCD8544_Draw_circle_filled(int16_t x, int16_t y, int16_t radius) {
 	int16_t x_0 = 0;
 	int16_t y_0 = radius;
 
-	PCD8544_Draw_pixel(x, y + radius);
-	PCD8544_Draw_pixel(x, y - radius);
-	PCD8544_Draw_pixel(x + radius, y);
-	PCD8544_Draw_pixel(x - radius, y);
-	PCD8544_Draw_line(x - radius, y, x + radius, y);
+	if(color){
+		PCD8544_Draw_pixel(x, y + radius);
+		PCD8544_Draw_pixel(x, y - radius);
+		PCD8544_Draw_pixel(x + radius, y);
+		PCD8544_Draw_pixel(x - radius, y);
+	}
+	else{	
+		PCD8544_Clear_pixel(x, y + radius);
+		PCD8544_Clear_pixel(x, y - radius);
+		PCD8544_Clear_pixel(x + radius, y);
+		PCD8544_Clear_pixel(x - radius, y);
+	}
+	
+	
+	
+	PCD8544_Draw_line(x - radius, y, x + radius, y, color);
 
 	while (x_0 < y_0) {
 		if (f >= 0) {
@@ -706,16 +746,16 @@ void PCD8544_Draw_circle_filled(int16_t x, int16_t y, int16_t radius) {
 		ddF_x += 2;
 		f += ddF_x;
 
-		PCD8544_Draw_line(x - x_0, y + y_0, x + x_0, y + y_0);
-		PCD8544_Draw_line(x + x_0, y - y_0, x - x_0, y - y_0);
-		PCD8544_Draw_line(x + y_0, y + x_0, x - y_0, y + x_0);
-		PCD8544_Draw_line(x + y_0, y - x_0, x - y_0, y - x_0);
+		PCD8544_Draw_line(x - x_0, y + y_0, x + x_0, y + y_0, color);
+		PCD8544_Draw_line(x + x_0, y - y_0, x - x_0, y - y_0, color);
+		PCD8544_Draw_line(x + y_0, y + x_0, x - y_0, y + x_0, color);
+		PCD8544_Draw_line(x + y_0, y - x_0, x - y_0, y - x_0, color);
 	}
 }
 /*--------------------------------Вывести закрашенную окружность-----------------------------------*/
 
 /*-----------------------------------Вывести пустотелый треугольник--------------------------------*/
-void PCD8544_Draw_triangle(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t x3, uint16_t y3) {
+void PCD8544_Draw_triangle(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t x3, uint16_t y3, uint8_t color) {
 /// Вывести пустотелый треугольник
 /// \param x_1 - первая точка треугольника. Координата по оси "x"
 /// \param y_1 - первая точка треугольника. Координата по оси "y"
@@ -724,14 +764,14 @@ void PCD8544_Draw_triangle(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, u
 /// \param x_3 - третья точка треугольника. Координата по оси "x"
 /// \param y_3 - третья точка треугольника. Координата по оси "y"
 
-	PCD8544_Draw_line(x1, y1, x2, y2);
-	PCD8544_Draw_line(x2, y2, x3, y3);
-	PCD8544_Draw_line(x3, y3, x1, y1);
+	PCD8544_Draw_line(x1, y1, x2, y2, color);
+	PCD8544_Draw_line(x2, y2, x3, y3, color);
+	PCD8544_Draw_line(x3, y3, x1, y1, color);
 }
 /*-----------------------------------Вывести пустотелый треугольник--------------------------------*/
 
 /*----------------------------------Вывести закрашенный треугольник--------------------------------*/
-void PCD8544_Draw_triangle_filled(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t x3, uint16_t y3) {
+void PCD8544_Draw_triangle_filled(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t x3, uint16_t y3, uint8_t color) {
 /// Вывести закрашенный треугольник
 /// \param x_1 - первая точка треугольника. Координата по оси "x"
 /// \param y_1 - первая точка треугольника. Координата по оси "y"
@@ -792,7 +832,7 @@ int16_t curpixel = 0;
 	}
 
 	for (curpixel = 0; curpixel <= numpixels; curpixel++) {
-		PCD8544_Draw_line(x, y, x3, y3);
+		PCD8544_Draw_line(x, y, x3, y3, color);
 
 		num += numadd;
 		if (num >= den) {
@@ -805,6 +845,158 @@ int16_t curpixel = 0;
 	}
 }
 /*----------------------------------Вывести закрашенный треугольник--------------------------------*/
+
+
+//==============================================================================
+// Процедура рисования прямоугольник с закругленніми краями ( заполненый )
+//==============================================================================
+void PCD8544_DrawFillRoundRect(int16_t x, int16_t y, uint16_t width, uint16_t height, int16_t cornerRadius, uint8_t color) {
+	
+	int16_t max_radius = ((width < height) ? width : height) / 2; // 1/2 minor axis
+  if (cornerRadius > max_radius){
+    cornerRadius = max_radius;
+	}
+	
+  PCD8544_DrawRectangleFilled(x + cornerRadius, y, x + cornerRadius + width - 2 * cornerRadius, y + height, color);
+  // draw four corners
+  PCD8544_DrawFillCircleHelper(x + width - cornerRadius - 1, y + cornerRadius, cornerRadius, 1, height - 2 * cornerRadius - 1, color);
+  PCD8544_DrawFillCircleHelper(x + cornerRadius, y + cornerRadius, cornerRadius, 2, height - 2 * cornerRadius - 1, color);
+}
+//==============================================================================
+
+//==============================================================================
+// Процедура рисования половины окружности ( правая или левая ) ( заполненый )
+//==============================================================================
+void PCD8544_DrawFillCircleHelper(int16_t x0, int16_t y0, int16_t r, uint8_t corners, int16_t delta, uint8_t color) {
+
+  int16_t f = 1 - r;
+  int16_t ddF_x = 1;
+  int16_t ddF_y = -2 * r;
+  int16_t x = 0;
+  int16_t y = r;
+  int16_t px = x;
+  int16_t py = y;
+
+  delta++; // Avoid some +1's in the loop
+
+  while (x < y) {
+    if (f >= 0) {
+      y--;
+      ddF_y += 2;
+      f += ddF_y;
+    }
+    x++;
+    ddF_x += 2;
+    f += ddF_x;
+
+    if (x < (y + 1)) {
+      if (corners & 1){
+        PCD8544_DrawLine(x0 + x, y0 - y, x0 + x, y0 - y - 1 + 2 * y + delta, color);
+			}
+      if (corners & 2){
+        PCD8544_DrawLine(x0 - x, y0 - y, x0 - x, y0 - y - 1 + 2 * y + delta, color);
+			}
+    }
+    if (y != py) {
+      if (corners & 1){
+        PCD8544_DrawLine(x0 + py, y0 - px, x0 + py, y0 - px - 1 + 2 * px + delta, color);
+			}
+      if (corners & 2){
+        PCD8544_DrawLine(x0 - py, y0 - px, x0 - py, y0 - px - 1 + 2 * px + delta, color);
+			}
+			py = y;
+    }
+    px = x;
+  }
+}
+//==============================================================================																		
+
+//==============================================================================
+// Процедура рисования четверти окружности (закругление, дуга) ( ширина 1 пиксель)
+//==============================================================================
+void PCD8544_DrawCircleHelper(int16_t x0, int16_t y0, int16_t radius, int8_t quadrantMask, uint8_t color)
+{
+    int16_t f = 1 - radius ;
+    int16_t ddF_x = 1;
+    int16_t ddF_y = -2 * radius;
+    int16_t x = 0;
+    int16_t y = radius;
+
+    while (x <= y) {
+        if (f >= 0) {
+            y--;
+            ddF_y += 2;
+            f += ddF_y;
+        }
+				
+        x++;
+        ddF_x += 2;
+        f += ddF_x;
+
+		if(color){
+			if (quadrantMask & 0x4) {
+				PCD8544_DrawPixel(x0 + x, y0 + y);
+				PCD8544_DrawPixel(x0 + y, y0 + x);;
+			}
+			if (quadrantMask & 0x2) {
+				PCD8544_DrawPixel(x0 + x, y0 - y);
+				PCD8544_DrawPixel(x0 + y, y0 - x);
+			}
+			if (quadrantMask & 0x8) {
+				PCD8544_DrawPixel(x0 - y, y0 + x);
+				PCD8544_DrawPixel(x0 - x, y0 + y);
+			}
+			if (quadrantMask & 0x1) {
+				PCD8544_DrawPixel(x0 - y, y0 - x);
+				PCD8544_DrawPixel(x0 - x, y0 - y);
+			}
+		}
+		else{	
+			if (quadrantMask & 0x4) {
+				PCD8544_Clear_pixel(x0 + x, y0 + y);
+				PCD8544_Clear_pixel(x0 + y, y0 + x);;
+			}
+			if (quadrantMask & 0x2) {
+				PCD8544_Clear_pixel(x0 + x, y0 - y);
+				PCD8544_Clear_pixel(x0 + y, y0 - x);
+			}
+			if (quadrantMask & 0x8) {
+				PCD8544_Clear_pixel(x0 - y, y0 + x);
+				PCD8544_Clear_pixel(x0 - x, y0 + y);
+			}
+			if (quadrantMask & 0x1) {
+				PCD8544_Clear_pixel(x0 - y, y0 - x);
+				PCD8544_Clear_pixel(x0 - x, y0 - y);
+			}
+		}
+	
+    }
+}
+//==============================================================================		
+
+//==============================================================================
+// Процедура рисования прямоугольник с закругленніми краями ( пустотелый )
+//==============================================================================
+void PCD8544_DrawRoundRect(int16_t x, int16_t y, uint16_t width, uint16_t height, int16_t cornerRadius, uint8_t color) {
+	
+	int16_t max_radius = ((width < height) ? width : height) / 2; // 1/2 minor axis
+  if (cornerRadius > max_radius){
+    cornerRadius = max_radius;
+	}
+	
+  PCD8544_DrawLine(x + cornerRadius, y, x + cornerRadius + width -1 - 2 * cornerRadius, y, color);         // Top
+  PCD8544_DrawLine(x + cornerRadius, y + height - 1, x + cornerRadius + width - 1 - 2 * cornerRadius, y + height - 1, color); // Bottom
+  PCD8544_DrawLine(x, y + cornerRadius, x, y + cornerRadius + height - 1 - 2 * cornerRadius, color);         // Left
+  PCD8544_DrawLine(x + width - 1, y + cornerRadius, x + width - 1, y + cornerRadius + height - 1 - 2 * cornerRadius, color); // Right
+	
+  // draw four corners
+	PCD8544_DrawCircleHelper(x + cornerRadius, y + cornerRadius, cornerRadius, 1, color);
+  PCD8544_DrawCircleHelper(x + width - cornerRadius - 1, y + cornerRadius, cornerRadius, 2, color);
+	PCD8544_DrawCircleHelper(x + width - cornerRadius - 1, y + height - cornerRadius - 1, cornerRadius, 4, color);
+  PCD8544_DrawCircleHelper(x + cornerRadius, y + height - cornerRadius - 1, cornerRadius, 8, color);
+}
+//==============================================================================
+
 
 /********************************РАБОТА С ГЕОМЕТРИЧЕСКИМИ ФИГУРАМИ**********************************/
 
