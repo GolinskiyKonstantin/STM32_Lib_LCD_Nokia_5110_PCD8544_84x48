@@ -936,7 +936,7 @@ void PCD8544_DrawCircleHelper(int16_t x0, int16_t y0, int16_t radius, int8_t qua
 		if(color){
 			if (quadrantMask & 0x4) {
 				PCD8544_DrawPixel(x0 + x, y0 + y);
-				PCD8544_DrawPixel(x0 + y, y0 + x);;
+				PCD8544_DrawPixel(x0 + y, y0 + x);
 			}
 			if (quadrantMask & 0x2) {
 				PCD8544_DrawPixel(x0 + x, y0 - y);
@@ -994,6 +994,88 @@ void PCD8544_DrawRoundRect(int16_t x, int16_t y, uint16_t width, uint16_t height
   PCD8544_DrawCircleHelper(x + width - cornerRadius - 1, y + cornerRadius, cornerRadius, 2, color);
 	PCD8544_DrawCircleHelper(x + width - cornerRadius - 1, y + height - cornerRadius - 1, cornerRadius, 4, color);
   PCD8544_DrawCircleHelper(x + cornerRadius, y + height - cornerRadius - 1, cornerRadius, 8, color);
+}
+//==============================================================================
+
+//==============================================================================
+// Процедура рисования линия толстая ( последний параметр толщина )
+//==============================================================================
+void PCD8544_DrawLineThick(int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint8_t color, uint8_t thick) {
+	const int16_t deltaX = abs(x2 - x1);
+	const int16_t deltaY = abs(y2 - y1);
+	const int16_t signX = x1 < x2 ? 1 : -1;
+	const int16_t signY = y1 < y2 ? 1 : -1;
+
+	int16_t error = deltaX - deltaY;
+
+	if (thick > 1){
+		PCD8544_DrawCircleFilled(x2, y2, thick >> 1, color);
+	}
+	else{
+		if(color){
+			PCD8544_DrawPixel(x2, y2);
+		}
+		else{	
+			PCD8544_Clear_pixel(x2, y2);
+		}
+	}
+
+	while (x1 != x2 || y1 != y2) {
+		if (thick > 1){
+			PCD8544_DrawCircleFilled(x1, y1, thick >> 1, color);
+		}
+		else{
+			if(color){
+				PCD8544_DrawPixel(x1, y1);
+			}
+			else{	
+				PCD8544_Clear_pixel(x1, y1);
+			}
+		}
+
+		const int16_t error2 = error * 2;
+		if (error2 > -deltaY) {
+			error -= deltaY;
+			x1 += signX;
+		}
+		if (error2 < deltaX) {
+			error += deltaX;
+			y1 += signY;
+		}
+	}
+}
+//==============================================================================		
+
+//==============================================================================
+// Процедура рисования дуга толстая ( часть круга )
+//==============================================================================
+void PCD8544_DrawArc(int16_t x0, int16_t y0, int16_t radius, int16_t startAngle, int16_t endAngle, uint8_t color, uint8_t thick) {
+	
+	int16_t xLast = -1, yLast = -1;
+	startAngle -= 90;
+	endAngle -= 90;
+
+	for (int16_t angle = startAngle; angle <= endAngle; angle += 2) {
+		float angleRad = (float) angle * PI / 180;
+		int x = cos(angleRad) * radius + x0;
+		int y = sin(angleRad) * radius + y0;
+
+		if (xLast == -1 || yLast == -1) {
+			xLast = x;
+			yLast = y;
+			continue;
+		}
+
+		if (thick > 1){
+			PCD8544_DrawLineThick(xLast, yLast, x, y, color, thick);
+		}
+		else{
+			PCD8544_DrawLine(xLast, yLast, x, y, color);
+		}
+
+		xLast = x;
+		yLast = y;
+	}
 }
 //==============================================================================
 

@@ -27,6 +27,7 @@ extern "C" {
 #include "stdlib.h"
 #include "string.h"
 #include "stdbool.h"
+#include "math.h"
 
 /*
 	подключение LCD_Nokia_5110_PCD8544_84x48:
@@ -86,7 +87,7 @@ enum PixelStatus{ PIX_OFF, PIX_ON };
 	extern SPI_HandleTypeDef PCD8544_SPI_HAL;
 #endif
 
-
+#define PI 	3.14159265
 
 /** Screen width in pixels (tested with 84) */
 #define SCREEN_WIDTH 	84
@@ -262,6 +263,9 @@ void PCD8544_DrawFillRoundRect(int16_t x, int16_t y, uint16_t width, uint16_t he
 //==============================================================================
 void PCD8544_DrawRoundRect(int16_t x, int16_t y, uint16_t width, uint16_t height, int16_t cornerRadius, uint8_t color);
 //==============================================================================
+
+void PCD8544_DrawArc(int16_t x0, int16_t y0, int16_t radius, int16_t startAngle, int16_t endAngle, uint8_t color, uint8_t thick);
+void PCD8544_DrawLineThick(int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint8_t color, uint8_t thick);
 
 /********************************РАБОТА С ГЕОМЕТРИЧЕСКИМИ ФИГУРАМИ**********************************/
 
