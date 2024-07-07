@@ -136,7 +136,7 @@ void PCD8544_Init( void ){
 // рисуем 1 пиксель, записываем его в буффер кадра но не выводим на дисплей
 // параметры: координата Х (от 0 по 83) координата У (от 0 по 47)
 //==============================================================================
-void PCD8544_Draw_pixel(uint8_t x, uint8_t y) {
+void PCD8544_DrawPixel(uint8_t x, uint8_t y) {
 /// Функция рисования точки.
 /// param\ x - координата по X(от 0 до 83)
 /// paran\ y - координата по Y(от 0 до 47)
@@ -156,7 +156,7 @@ void PCD8544_Draw_pixel(uint8_t x, uint8_t y) {
 // Функция удаления пикселя на экране
 // параметры: координата Х (от 0 по 83) координата У (от 0 по 47)
 //==============================================================================
-void PCD8544_Clear_pixel(uint8_t x, uint8_t y) {
+void PCD8544_ClearPixel(uint8_t x, uint8_t y) {
 /// Функция удаления точки.
 /// param\ x - координата по X(от 0 до 83)
 /// paran\ y - координата по Y(от 0 до 47)
@@ -165,7 +165,7 @@ void PCD8544_Clear_pixel(uint8_t x, uint8_t y) {
 		y = SCREEN_HEIGHT - 1 - y;
 	}
 	if (y < SCREEN_HEIGHT && x < SCREEN_WIDTH) {
-		PCD8544_buffer[(x) + ((y / 8) * SCREEN_WIDTH)] &= 0xFE << y % 8;
+		PCD8544_buffer[(x) + ((y / 8) * SCREEN_WIDTH)] &= ~(0x01 << (y % 8));
 	}
 }
 //==============================================================================
@@ -178,7 +178,7 @@ void PCD8544_Clear_pixel(uint8_t x, uint8_t y) {
 //								вызвать перед формированием изображения ( если данные в массиве уже есть
 //								то инверсии не будет, будет только то что было сформировано после вызова данной функции )
 //==============================================================================
-void PCD8544_rotation(uint8_t mode) {
+void PCD8544_Rotation(uint8_t mode) {
 /// Функция ротации  дисплея ( только в графическом дисплее ).
 // вызвать перед формированием изображения ( если данные в массиве уже есть
 // то инверсии не будет, будет только то что было сформировано после вызова данной функции )
@@ -223,7 +223,7 @@ void PCD8544_Update(void) {
 //==============================================================================
 // Функция очистки буфера кадра ( само изображение на экране не удаляет )
 //==============================================================================
-void PCD8544_Clear_frame_buffer(void) {
+void PCD8544_ClearFrameBuffer(void) {
 /// Функция очистки буфера кадра
 	memset(PCD8544_buffer, 0x00, sizeof(PCD8544_buffer));
 }
@@ -262,7 +262,7 @@ void PCD8544_Inversion(uint8_t inv) {
 // контрастность от 0 по 7
 // цветовая температура от 0 по 3
 //==============================================================================
-void PCD8544_contrast(uint8_t contrast, uint8_t temp) {
+void PCD8544_Contrast(uint8_t contrast, uint8_t temp) {
 /// Функция инверсии
 	
 	if( temp > 3 ){
@@ -313,7 +313,7 @@ void PCD8544_Clear( void ) {
 	
 	PCD8544_CS_set();				// СS=1 - закончили сеанс работы с дисплеем
 	
-	PCD8544_Clear_frame_buffer();
+	PCD8544_ClearFrameBuffer();
 }
 //==============================================================================
 
@@ -322,7 +322,7 @@ void PCD8544_Clear( void ) {
 // Display ON OFF ( очищаем экран но не очищаем буфер кадра )
 // 1-enable, 0-disable
 //==============================================================================
-void PCD8544_Display_On_Off(bool enable)   // 1-enable, 0-disable
+void PCD8544_DisplayOnOff(bool enable)   // 1-enable, 0-disable
 {
 	if (enable) {
 		PCD8544_Update();
@@ -370,10 +370,10 @@ void PCD8544_DrawBitmap(int16_t x, int16_t y, const unsigned char* bitmap, int16
             }
             if(byte & 0x80){
             	if(color){
-            		PCD8544_Draw_pixel(x+i, y);
+            		PCD8544_DrawPixel(x+i, y);
             	}
             	else{
-            		PCD8544_Clear_pixel(x+i, y);
+            		PCD8544_ClearPixel(x+i, y);
             	}
             }
         }
@@ -460,10 +460,10 @@ void PCD8544_DrawChar(int16_t x, int16_t y, unsigned char ch, FontDef_t* Font, u
 					for (yy = 0; yy < multiplier; yy++){
 						for (xx = 0; xx < multiplier; xx++){
 							if(color){
-								PCD8544_Draw_pixel(X+xx, Y+yy);
+								PCD8544_DrawPixel(X+xx, Y+yy);
 							}
 							else{
-								PCD8544_Clear_pixel(X+xx, Y+yy);
+								PCD8544_ClearPixel(X+xx, Y+yy);
 							}
 						}
 					}
@@ -475,10 +475,10 @@ void PCD8544_DrawChar(int16_t x, int16_t y, unsigned char ch, FontDef_t* Font, u
 					for (yy = 0; yy < multiplier; yy++){
 						for (xx = 0; xx < multiplier; xx++){
 							if(!color){
-								PCD8544_Draw_pixel(X+xx, Y+yy);
+								PCD8544_DrawPixel(X+xx, Y+yy);
 							}
 							else{
-								PCD8544_Clear_pixel(X+xx, Y+yy);
+								PCD8544_ClearPixel(X+xx, Y+yy);
 							}
 						}
 					}
@@ -566,7 +566,7 @@ void PCD8544_Print(int16_t x, int16_t y, char* str, FontDef_t* Font, uint8_t mul
 
 /********************************РАБОТА С ГЕОМЕТРИЧЕСКИМИ ФИГУРАМИ**********************************/
 
-void PCD8544_Draw_line(uint8_t x_start, uint8_t y_start, uint8_t x_end, uint8_t y_end, uint8_t color) {
+void PCD8544_DrawLine(uint8_t x_start, uint8_t y_start, uint8_t x_end, uint8_t y_end, uint8_t color) {
 	int dx = (x_end >= x_start) ? x_end - x_start : x_start - x_end;
 	int dy = (y_end >= y_start) ? y_end - y_start : y_start - y_end;
 	int sx = (x_start < x_end) ? 1 : -1;
@@ -575,10 +575,10 @@ void PCD8544_Draw_line(uint8_t x_start, uint8_t y_start, uint8_t x_end, uint8_t 
 
 	for (;;) {
 		if(color){
-			PCD8544_Draw_pixel(x_start, y_start);
+			PCD8544_DrawPixel(x_start, y_start);
 		}
 		else{
-			PCD8544_Clear_pixel(x_start, y_start);
+			PCD8544_ClearPixel(x_start, y_start);
 		}
 
 		if (x_start == x_end && y_start == y_end)
@@ -597,7 +597,7 @@ void PCD8544_Draw_line(uint8_t x_start, uint8_t y_start, uint8_t x_end, uint8_t 
 
 
 /*--------------------------------Вывести пустотелый прямоугольник---------------------------------*/
-void PCD8544_Draw_rectangle(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint8_t color) {
+void PCD8544_DrawRectangle(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint8_t color) {
 /// Вывести пустотелый прямоугольник
 /// \param x - начальная точка по оси "x"
 /// \param y - начальная точка по оси "y"
@@ -613,15 +613,15 @@ void PCD8544_Draw_rectangle(uint16_t x, uint16_t y, uint16_t width, uint16_t hei
 	}
 
 	/*Рисуем линии*/
-	PCD8544_Draw_line(x, y, x + width, y, color); /*Верх прямоугольника*/
-	PCD8544_Draw_line(x, y + height, x + width, y + height, color); /*Низ прямоугольника*/
-	PCD8544_Draw_line(x, y, x, y + height, color); /*Левая сторона прямоугольника*/
-	PCD8544_Draw_line(x + width, y, x + width, y + height, color); /*Правая сторона прямоугольника*/
+	PCD8544_DrawLine(x, y, x + width, y, color); /*Верх прямоугольника*/
+	PCD8544_DrawLine(x, y + height, x + width, y + height, color); /*Низ прямоугольника*/
+	PCD8544_DrawLine(x, y, x, y + height, color); /*Левая сторона прямоугольника*/
+	PCD8544_DrawLine(x + width, y, x + width, y + height, color); /*Правая сторона прямоугольника*/
 }
 /*--------------------------------Вывести пустотелый прямоугольник---------------------------------*/
 
 /*-------------------------------Вывести закрашенный прямоугольник---------------------------------*/
-void PCD8544_Draw_rectangle_filled(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint8_t color) {
+void PCD8544_DrawRectangleFilled(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint8_t color) {
 /// Вывести закрашенный прямоугольник
 /// \param x - начальная точка по оси "x"
 /// \param y - начальная точка по оси "y"
@@ -638,13 +638,13 @@ void PCD8544_Draw_rectangle_filled(uint16_t x, uint16_t y, uint16_t width, uint1
 
 	/*Рисуем линии*/
 	for (uint8_t i = 0; i <= height; i++) {
-		PCD8544_Draw_line(x, y + i, x + width, y + i, color);
+		PCD8544_DrawLine(x, y + i, x + width, y + i, color);
 	}
 }
 /*-------------------------------Вывести закрашенный прямоугольник---------------------------------*/
 
 /*---------------------------------Вывести пустотелую окружность-----------------------------------*/
-void PCD8544_Draw_circle(uint8_t x, uint8_t y, uint8_t radius, uint8_t color) {
+void PCD8544_DrawCircle(uint8_t x, uint8_t y, uint8_t radius, uint8_t color) {
 /// Вывести пустотелую окружность
 /// \param x - точка центра окружности по оси "x"
 /// \param y - точка центра окружности по оси "y"
@@ -657,16 +657,16 @@ void PCD8544_Draw_circle(uint8_t x, uint8_t y, uint8_t radius, uint8_t color) {
 	int x_0 = 0;
 	
 	if(color){
-		PCD8544_Draw_pixel(x, y + radius);
-		PCD8544_Draw_pixel(x, y - radius);
-		PCD8544_Draw_pixel(x + radius, y);
-		PCD8544_Draw_pixel(x - radius, y);
+		PCD8544_DrawPixel(x, y + radius);
+		PCD8544_DrawPixel(x, y - radius);
+		PCD8544_DrawPixel(x + radius, y);
+		PCD8544_DrawPixel(x - radius, y);
 	}
 	else{
-		PCD8544_Clear_pixel(x, y + radius);
-		PCD8544_Clear_pixel(x, y - radius);
-		PCD8544_Clear_pixel(x + radius, y);
-		PCD8544_Clear_pixel(x - radius, y);
+		PCD8544_ClearPixel(x, y + radius);
+		PCD8544_ClearPixel(x, y - radius);
+		PCD8544_ClearPixel(x + radius, y);
+		PCD8544_ClearPixel(x - radius, y);
 	}
 	
 
@@ -682,24 +682,24 @@ void PCD8544_Draw_circle(uint8_t x, uint8_t y, uint8_t radius, uint8_t color) {
 		f += ddF_x;
 		
 		if(color){
-			PCD8544_Draw_pixel(x + x_0, y + y_0);
-			PCD8544_Draw_pixel(x - x_0, y + y_0);
-			PCD8544_Draw_pixel(x + x_0, y - y_0);
-			PCD8544_Draw_pixel(x - x_0, y - y_0);
-			PCD8544_Draw_pixel(x + y_0, y + x_0);
-			PCD8544_Draw_pixel(x - y_0, y + x_0);
-			PCD8544_Draw_pixel(x + y_0, y - x_0);
-			PCD8544_Draw_pixel(x - y_0, y - x_0);
+			PCD8544_DrawPixel(x + x_0, y + y_0);
+			PCD8544_DrawPixel(x - x_0, y + y_0);
+			PCD8544_DrawPixel(x + x_0, y - y_0);
+			PCD8544_DrawPixel(x - x_0, y - y_0);
+			PCD8544_DrawPixel(x + y_0, y + x_0);
+			PCD8544_DrawPixel(x - y_0, y + x_0);
+			PCD8544_DrawPixel(x + y_0, y - x_0);
+			PCD8544_DrawPixel(x - y_0, y - x_0);
 		}
 		else{
-			PCD8544_Clear_pixel(x + x_0, y + y_0);
-			PCD8544_Clear_pixel(x - x_0, y + y_0);
-			PCD8544_Clear_pixel(x + x_0, y - y_0);
-			PCD8544_Clear_pixel(x - x_0, y - y_0);
-			PCD8544_Clear_pixel(x + y_0, y + x_0);
-			PCD8544_Clear_pixel(x - y_0, y + x_0);
-			PCD8544_Clear_pixel(x + y_0, y - x_0);
-			PCD8544_Clear_pixel(x - y_0, y - x_0);
+			PCD8544_ClearPixel(x + x_0, y + y_0);
+			PCD8544_ClearPixel(x - x_0, y + y_0);
+			PCD8544_ClearPixel(x + x_0, y - y_0);
+			PCD8544_ClearPixel(x - x_0, y - y_0);
+			PCD8544_ClearPixel(x + y_0, y + x_0);
+			PCD8544_ClearPixel(x - y_0, y + x_0);
+			PCD8544_ClearPixel(x + y_0, y - x_0);
+			PCD8544_ClearPixel(x - y_0, y - x_0);
 		}
 		
 	}
@@ -707,7 +707,7 @@ void PCD8544_Draw_circle(uint8_t x, uint8_t y, uint8_t radius, uint8_t color) {
 /*---------------------------------Вывести пустотелую окружность-----------------------------------*/
 
 /*--------------------------------Вывести закрашенную окружность-----------------------------------*/
-void PCD8544_Draw_circle_filled(int16_t x, int16_t y, int16_t radius, uint8_t color) {
+void PCD8544_DrawCircleFilled(int16_t x, int16_t y, int16_t radius, uint8_t color) {
 /// Вывести закрашенную окружность
 /// \param x - точка центра окружности по оси "x"
 /// \param y - точка центра окружности по оси "y"
@@ -720,21 +720,21 @@ void PCD8544_Draw_circle_filled(int16_t x, int16_t y, int16_t radius, uint8_t co
 	int16_t y_0 = radius;
 
 	if(color){
-		PCD8544_Draw_pixel(x, y + radius);
-		PCD8544_Draw_pixel(x, y - radius);
-		PCD8544_Draw_pixel(x + radius, y);
-		PCD8544_Draw_pixel(x - radius, y);
+		PCD8544_DrawPixel(x, y + radius);
+		PCD8544_DrawPixel(x, y - radius);
+		PCD8544_DrawPixel(x + radius, y);
+		PCD8544_DrawPixel(x - radius, y);
 	}
 	else{	
-		PCD8544_Clear_pixel(x, y + radius);
-		PCD8544_Clear_pixel(x, y - radius);
-		PCD8544_Clear_pixel(x + radius, y);
-		PCD8544_Clear_pixel(x - radius, y);
+		PCD8544_ClearPixel(x, y + radius);
+		PCD8544_ClearPixel(x, y - radius);
+		PCD8544_ClearPixel(x + radius, y);
+		PCD8544_ClearPixel(x - radius, y);
 	}
 	
 	
 	
-	PCD8544_Draw_line(x - radius, y, x + radius, y, color);
+	PCD8544_DrawLine(x - radius, y, x + radius, y, color);
 
 	while (x_0 < y_0) {
 		if (f >= 0) {
@@ -746,16 +746,16 @@ void PCD8544_Draw_circle_filled(int16_t x, int16_t y, int16_t radius, uint8_t co
 		ddF_x += 2;
 		f += ddF_x;
 
-		PCD8544_Draw_line(x - x_0, y + y_0, x + x_0, y + y_0, color);
-		PCD8544_Draw_line(x + x_0, y - y_0, x - x_0, y - y_0, color);
-		PCD8544_Draw_line(x + y_0, y + x_0, x - y_0, y + x_0, color);
-		PCD8544_Draw_line(x + y_0, y - x_0, x - y_0, y - x_0, color);
+		PCD8544_DrawLine(x - x_0, y + y_0, x + x_0, y + y_0, color);
+		PCD8544_DrawLine(x + x_0, y - y_0, x - x_0, y - y_0, color);
+		PCD8544_DrawLine(x + y_0, y + x_0, x - y_0, y + x_0, color);
+		PCD8544_DrawLine(x + y_0, y - x_0, x - y_0, y - x_0, color);
 	}
 }
 /*--------------------------------Вывести закрашенную окружность-----------------------------------*/
 
 /*-----------------------------------Вывести пустотелый треугольник--------------------------------*/
-void PCD8544_Draw_triangle(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t x3, uint16_t y3, uint8_t color) {
+void PCD8544_DrawTriangle(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t x3, uint16_t y3, uint8_t color) {
 /// Вывести пустотелый треугольник
 /// \param x_1 - первая точка треугольника. Координата по оси "x"
 /// \param y_1 - первая точка треугольника. Координата по оси "y"
@@ -764,14 +764,14 @@ void PCD8544_Draw_triangle(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, u
 /// \param x_3 - третья точка треугольника. Координата по оси "x"
 /// \param y_3 - третья точка треугольника. Координата по оси "y"
 
-	PCD8544_Draw_line(x1, y1, x2, y2, color);
-	PCD8544_Draw_line(x2, y2, x3, y3, color);
-	PCD8544_Draw_line(x3, y3, x1, y1, color);
+	PCD8544_DrawLine(x1, y1, x2, y2, color);
+	PCD8544_DrawLine(x2, y2, x3, y3, color);
+	PCD8544_DrawLine(x3, y3, x1, y1, color);
 }
 /*-----------------------------------Вывести пустотелый треугольник--------------------------------*/
 
 /*----------------------------------Вывести закрашенный треугольник--------------------------------*/
-void PCD8544_Draw_triangle_filled(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t x3, uint16_t y3, uint8_t color) {
+void PCD8544_DrawTriangleFilled(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t x3, uint16_t y3, uint8_t color) {
 /// Вывести закрашенный треугольник
 /// \param x_1 - первая точка треугольника. Координата по оси "x"
 /// \param y_1 - первая точка треугольника. Координата по оси "y"
@@ -832,7 +832,7 @@ int16_t curpixel = 0;
 	}
 
 	for (curpixel = 0; curpixel <= numpixels; curpixel++) {
-		PCD8544_Draw_line(x, y, x3, y3, color);
+		PCD8544_DrawLine(x, y, x3, y3, color);
 
 		num += numadd;
 		if (num >= den) {
@@ -953,20 +953,20 @@ void PCD8544_DrawCircleHelper(int16_t x0, int16_t y0, int16_t radius, int8_t qua
 		}
 		else{	
 			if (quadrantMask & 0x4) {
-				PCD8544_Clear_pixel(x0 + x, y0 + y);
-				PCD8544_Clear_pixel(x0 + y, y0 + x);;
+				PCD8544_ClearPixel(x0 + x, y0 + y);
+				PCD8544_ClearPixel(x0 + y, y0 + x);;
 			}
 			if (quadrantMask & 0x2) {
-				PCD8544_Clear_pixel(x0 + x, y0 - y);
-				PCD8544_Clear_pixel(x0 + y, y0 - x);
+				PCD8544_ClearPixel(x0 + x, y0 - y);
+				PCD8544_ClearPixel(x0 + y, y0 - x);
 			}
 			if (quadrantMask & 0x8) {
-				PCD8544_Clear_pixel(x0 - y, y0 + x);
-				PCD8544_Clear_pixel(x0 - x, y0 + y);
+				PCD8544_ClearPixel(x0 - y, y0 + x);
+				PCD8544_ClearPixel(x0 - x, y0 + y);
 			}
 			if (quadrantMask & 0x1) {
-				PCD8544_Clear_pixel(x0 - y, y0 - x);
-				PCD8544_Clear_pixel(x0 - x, y0 - y);
+				PCD8544_ClearPixel(x0 - y, y0 - x);
+				PCD8544_ClearPixel(x0 - x, y0 - y);
 			}
 		}
 	
@@ -1016,7 +1016,7 @@ void PCD8544_DrawLineThick(int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint8
 			PCD8544_DrawPixel(x2, y2);
 		}
 		else{	
-			PCD8544_Clear_pixel(x2, y2);
+			PCD8544_ClearPixel(x2, y2);
 		}
 	}
 
@@ -1029,7 +1029,7 @@ void PCD8544_DrawLineThick(int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint8
 				PCD8544_DrawPixel(x1, y1);
 			}
 			else{	
-				PCD8544_Clear_pixel(x1, y1);
+				PCD8544_ClearPixel(x1, y1);
 			}
 		}
 
